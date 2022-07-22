@@ -4,6 +4,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:background="@color/cardview_dark_background"
 	tools:context=".MainActivity">
 
 	<com.google.android.material.button.MaterialButton
@@ -36,6 +37,7 @@
 		android:layout_marginRight="8dp"
 		android:text="@string/last_saved_location"
 		android:textAlignment="center"
+		android:textColor="@color/white"
 		android:textSize="18sp"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
@@ -49,6 +51,7 @@
 		android:layout_marginTop="70dp"
 		android:layout_marginRight="8dp"
 		android:textAlignment="center"
+		android:textColor="@color/white"
 		android:textSize="22sp"
 		android:textStyle="bold"
 		app:layout_constraintHorizontal_bias="0.5"
