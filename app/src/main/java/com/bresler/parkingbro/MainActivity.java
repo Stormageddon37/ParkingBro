@@ -23,6 +23,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -121,9 +124,16 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	private void setupCameraButton() {
+		FloatingActionButton fab = findViewById(R.id.camera);
+		fab.setOnClickListener(view -> Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
+				.setAction("Action", null).show());
+	}
+
 	private void setupButtons() {
 		setupNavigateButton();
 		setupSaveButton();
+		setupCameraButton();
 	}
 
 	private void initializeLocation() {
