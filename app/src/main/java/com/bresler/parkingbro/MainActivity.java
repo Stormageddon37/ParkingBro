@@ -6,14 +6,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -127,11 +132,33 @@ public class MainActivity extends AppCompatActivity {
 		textView.setText(sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown"));
 	}
 
+	private void setupActionBar() {
+		ActionBar actionBar = getSupportActionBar();
+		ColorDrawable colorDrawable = new ColorDrawable(Color.parseColor("#00A651"));
+		if (actionBar != null) {
+			actionBar.setBackgroundDrawable(colorDrawable);
+		}
+	}
+
+	private void setupStatusBar() {
+		Window window = this.getWindow();
+		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+		window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+		window.setStatusBarColor(ContextCompat.getColor(this, R.color.black));
+	}
+
+	private void setupColors() {
+		setupActionBar();
+		setupStatusBar();
+	}
+
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		initializeLocation();
 		setupButtons();
+		initializeLocation();
+		setupColors();
 	}
 }

@@ -23,6 +23,7 @@
 		app:backgroundTint="@color/green"
 		app:icon="@drawable/ic_location_foreground"
 		app:iconSize="52dip"
+		app:iconTint="@color/white"
 		app:layout_constraintHorizontal_bias="0.5"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
@@ -73,6 +74,7 @@
 		app:backgroundTint="@color/green"
 		app:icon="@drawable/ic_directions_foreground"
 		app:iconSize="52dip"
+		app:iconTint="@color/white"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/actualLocation" />
