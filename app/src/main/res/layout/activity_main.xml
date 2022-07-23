@@ -79,4 +79,21 @@
 		app:layout_constraintRight_toRightOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/actualLocation" />
 
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+		android:id="@+id/floating_action_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_margin="20dp"
+		android:adjustViewBounds="true"
+		android:backgroundTint="@color/green"
+		android:contentDescription="@string/adds_images"
+		android:tint="@android:color/white"
+		app:borderWidth="0dp"
+		app:fabSize="normal"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:maxImageSize="52dp"
+		app:srcCompat="@drawable/ic_camera_foreground"
+		app:tint="@color/white" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
