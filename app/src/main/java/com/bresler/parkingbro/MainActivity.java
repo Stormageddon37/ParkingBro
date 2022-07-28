@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
 	ImageView imageView;
 	Uri imageUri;
 
-	private void failToast(String text) {
-		Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+	private void makeToast(String text) {
+		Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
 	}
 
 	private void addLocationPermission() {
@@ -124,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
 		Location currentLocation = getOptimalLocation();
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
-			failToast("Unable to get location");
+			makeToast("Unable to get location");
 		if (!savedLocationSuccessfully(locationString)) {
-			failToast("Location saving failed, please try again later");
+			makeToast("Location saving failed, please try again later");
 		}
 		return locationString;
 	}
@@ -135,11 +135,11 @@ public class MainActivity extends AppCompatActivity {
 		Button button = findViewById(R.id.save);
 		button.setOnClickListener(v -> {
 			if (!checkLocationPermission()) {
-				failToast("You must allow location service to use this app");
+				makeToast("You must allow location service to use this app");
 				return;
 			}
 			actualLocation.setText(saveLocation());
-			Toast.makeText(this, "Location saved!", Toast.LENGTH_SHORT).show();
+			makeToast("Location saved!");
 		});
 	}
 
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 		button.setOnClickListener(v -> {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, getNavigationURL());
 			startActivity(browserIntent);
-			Toast.makeText(this, "Launching navigation app!", Toast.LENGTH_SHORT).show();
+			makeToast("Launching navigation app!");
 		});
 	}
 
@@ -173,10 +173,10 @@ public class MainActivity extends AppCompatActivity {
 		imageButton.setOnClickListener(view -> {
 			if (containsImage) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
-				Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
+				makeToast("Latest image deleted!");
 				containsImage = false;
 			} else {
-				Toast.makeText(this, "NO IMAGE", Toast.LENGTH_SHORT).show();
+				makeToast("No stashed images found!");
 			}
 		});
 	}
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
 			} else {
-				Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+				makeToast("Permission denied!");
 			}
 		}
 	}
@@ -239,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (resultCode == RESULT_OK) {
 			imageView.setImageURI(imageUri);
+			makeToast("Saved image!");
 			containsImage = true;
 		}
 	}
