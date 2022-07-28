@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 	public static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
 	private static final int CAPTURE_CODE = 1001;
+	private static boolean containsImage = false;
 	ImageButton imageButton;
 	TextView actualLocation;
 	ImageView imageView;
@@ -170,10 +171,13 @@ public class MainActivity extends AppCompatActivity {
 	private void setupDeleteButton() {
 		imageButton = findViewById(R.id.delete);
 		imageButton.setOnClickListener(view -> {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (containsImage) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
+				Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
+				containsImage = false;
+			} else {
+				Toast.makeText(this, "NO IMAGE", Toast.LENGTH_SHORT).show();
 			}
-			Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
@@ -235,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (resultCode == RESULT_OK) {
 			imageView.setImageURI(imageUri);
+			containsImage = true;
 		}
 	}
 
