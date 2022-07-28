@@ -111,4 +111,19 @@
 		app:layout_constraintTop_toBottomOf="@+id/navigate"
 		tools:ignore="HardcodedText" />
 
+	<ImageButton
+		android:id="@+id/delete"
+		style="@style/Widget.MaterialComponents.Button.Icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@drawable/button_shape"
+		android:contentDescription="Delete the current stashed image"
+		android:scaleType="fitCenter"
+		android:src="@drawable/ic_baseline_delete_24"
+		app:backgroundTint="@color/green"
+		app:layout_constraintLeft_toLeftOf="parent"
+		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/image_view"
+		tools:ignore="HardcodedText" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
