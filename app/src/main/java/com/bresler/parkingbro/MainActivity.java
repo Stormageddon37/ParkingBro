@@ -215,13 +215,6 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		setup();
-	}
-
-	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -240,5 +233,12 @@ public class MainActivity extends AppCompatActivity {
 		if (resultCode == RESULT_OK) {
 			imageView.setImageURI(imageUri);
 		}
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		setup();
 	}
 }
