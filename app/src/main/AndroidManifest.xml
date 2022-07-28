@@ -16,6 +16,10 @@
 		android:name="android.hardware.camera"
 		android:required="true" />
 
+	<!--		"The Enrichment Center once again reminds you that       -->
+	<!--		android hell is a real place where you will be sent     -->
+	<!--		at the first sign of defiance."                         -->
+
 	<application
 		android:allowBackup="true"
 		android:dataExtractionRules="@xml/data_extraction_rules"
