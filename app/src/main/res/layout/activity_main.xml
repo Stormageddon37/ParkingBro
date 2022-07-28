@@ -13,7 +13,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="8dp"
-		android:layout_marginTop="80dp"
+		android:layout_marginTop="40dp"
 		android:layout_marginRight="8dp"
 		android:background="@drawable/button_shape"
 		android:text="@string/save_current_location"
@@ -21,13 +21,14 @@
 		android:textColor="@color/white"
 		android:textSize="18sp"
 		app:backgroundTint="@color/green"
-		app:icon="@drawable/ic_location_foreground"
-		app:iconSize="52dip"
+		app:icon="@drawable/ic_baseline_location_on_24"
+		app:iconSize="32dip"
 		app:iconTint="@color/white"
 		app:layout_constraintHorizontal_bias="0.5"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
-		app:layout_constraintTop_toTopOf="parent" />
+		app:layout_constraintTop_toTopOf="parent"
+		app:rippleColor="@color/white" />
 
 	<TextView
 		android:id="@+id/savedLocation"
@@ -65,18 +66,64 @@
 		style="@style/Widget.MaterialComponents.Button.Icon"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginTop="50dp"
+		android:layout_marginTop="40dp"
 		android:background="@drawable/button_shape"
 		android:text="@string/navigate_to_saved_location"
 		android:textAlignment="center"
 		android:textColor="@color/white"
 		android:textSize="18sp"
 		app:backgroundTint="@color/green"
-		app:icon="@drawable/ic_directions_foreground"
-		app:iconSize="52dip"
+		app:icon="@drawable/ic_baseline_directions_walk_24"
+		app:iconSize="32dip"
 		app:iconTint="@color/white"
 		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintRight_toRightOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/actualLocation" />
+		app:layout_constraintTop_toBottomOf="@+id/actualLocation"
+		app:rippleColor="@color/white" />
+
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+		android:id="@+id/camera"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_margin="20dp"
+		android:adjustViewBounds="true"
+		android:backgroundTint="@color/green"
+		android:contentDescription="@string/adds_images"
+		android:tint="@android:color/white"
+		app:borderWidth="0dp"
+		app:fabSize="normal"
+		app:iconSize="32dip"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:rippleColor="@color/white"
+		app:srcCompat="@drawable/ic_baseline_photo_camera_24"
+		app:tint="@color/white" />
+
+	<ImageView
+		android:id="@+id/image_view"
+		android:layout_width="200dp"
+		android:layout_height="200dp"
+		android:layout_marginTop="30dp"
+		android:contentDescription="Image"
+		android:src="@drawable/ic_baseline_image_24"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/navigate"
+		tools:ignore="HardcodedText" />
+
+	<ImageButton
+		android:id="@+id/delete"
+		style="@style/Widget.MaterialComponents.Button.Icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@drawable/button_shape"
+		android:contentDescription="Delete the current stashed image"
+		android:scaleType="fitCenter"
+		android:src="@drawable/ic_baseline_delete_24"
+		app:backgroundTint="@color/green"
+		app:layout_constraintLeft_toLeftOf="parent"
+		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/image_view"
+		tools:ignore="HardcodedText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

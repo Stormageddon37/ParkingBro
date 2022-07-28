@@ -1,7 +1,9 @@
 package com.bresler.parkingbro;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,17 +13,25 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
 	public static final String LOCATION_PREFS_INDEX = "location";
 	public static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
 	public static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
+	private static final int PERMISSION_CODE = 1234;
+	private static final int CAPTURE_CODE = 1001;
+	ImageButton imageButton;
+	TextView actualLocation;
+	ImageView imageView;
+	Uri imageUri;
 
 	private void failToast(String text) {
 		Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
@@ -92,18 +108,18 @@ public class MainActivity extends AppCompatActivity {
 		return Uri.parse(url);
 	}
 
-	private void setupSaveButton() {
-		Button button = findViewById(R.id.save);
-		button.setOnClickListener(v -> {
-			if (!checkLocationPermission()) {
-				failToast("You must allow location service to use this app");
-				return;
-			}
-			saveLocation();
-		});
+	public void openCamera() {
+		ContentValues values = new ContentValues();
+		values.put(MediaStore.Images.Media.TITLE, "new image");
+		values.put(MediaStore.Images.Media.DESCRIPTION, "");
+		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+		startActivityForResult(cameraIntent, CAPTURE_CODE);
 	}
 
-	private void saveLocation() {
+	private String saveLocation() {
 		Location currentLocation = getOptimalLocation();
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
@@ -111,6 +127,19 @@ public class MainActivity extends AppCompatActivity {
 		if (!savedLocationSuccessfully(locationString)) {
 			failToast("Location saving failed, please try again later");
 		}
+		return locationString;
+	}
+
+	private void setupSaveButton() {
+		Button button = findViewById(R.id.save);
+		button.setOnClickListener(v -> {
+			if (!checkLocationPermission()) {
+				failToast("You must allow location service to use this app");
+				return;
+			}
+			actualLocation.setText(saveLocation());
+			Toast.makeText(this, "Location saved!", Toast.LENGTH_SHORT).show();
+		});
 	}
 
 	private void setupNavigateButton() {
@@ -118,18 +147,46 @@ public class MainActivity extends AppCompatActivity {
 		button.setOnClickListener(v -> {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, getNavigationURL());
 			startActivity(browserIntent);
+			Toast.makeText(this, "Launching navigation app!", Toast.LENGTH_SHORT).show();
+		});
+	}
+
+	private void setupCameraButton() {
+		FloatingActionButton cameraButton = findViewById(R.id.camera);
+		cameraButton.setOnClickListener(view -> {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+					String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+					requestPermissions(permissions, PERMISSION_CODE);
+				} else {
+					openCamera();
+				}
+			} else {
+				openCamera();
+			}
+		});
+	}
+
+	private void setupDeleteButton() {
+		imageButton = findViewById(R.id.delete);
+		imageButton.setOnClickListener(view -> {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				imageView.setImageResource(R.drawable.ic_baseline_image_24);
+			}
+			Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
 	private void setupButtons() {
 		setupNavigateButton();
 		setupSaveButton();
+		setupCameraButton();
+		setupDeleteButton();
 	}
 
 	private void initializeLocation() {
-		TextView textView = findViewById(R.id.actualLocation);
 		SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-		textView.setText(sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown"));
+		actualLocation.setText(sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown"));
 	}
 
 	private void setupActionBar() {
@@ -147,18 +204,44 @@ public class MainActivity extends AppCompatActivity {
 		window.setStatusBarColor(ContextCompat.getColor(this, R.color.black));
 	}
 
-	private void setupColors() {
-		setupActionBar();
-		setupStatusBar();
+	private void findViews() {
+		imageView = findViewById(R.id.image_view);
+		actualLocation = findViewById(R.id.actualLocation);
 	}
 
+	private void setup() {
+		findViews();
+		setupButtons();
+		setupActionBar();
+		setupStatusBar();
+		initializeLocation();
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+		if (requestCode == PERMISSION_CODE) {
+			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+				openCamera();
+			} else {
+				Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+
+	@SuppressLint("MissingSuperCall")
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		if (resultCode == RESULT_OK) {
+			imageView.setImageURI(imageUri);
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		setupButtons();
-		initializeLocation();
-		setupColors();
+		setup();
 	}
 }
