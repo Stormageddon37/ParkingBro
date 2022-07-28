@@ -35,16 +35,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class MainActivity extends AppCompatActivity {
 
 
-	public static final String LOCATION_PREFS_INDEX = "location";
-	public static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
-	public static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
+	private static final String LOCATION_PREFS_INDEX = "location";
+	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
+	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
 	private static final int CAPTURE_CODE = 1001;
 	private static boolean containsImage = false;
-	ImageButton imageButton;
-	TextView actualLocation;
-	ImageView imageView;
-	Uri imageUri;
+	private TextView actualLocation;
+	private ImageView imageView;
+	private Uri imageUri;
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -164,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void setupDeleteButton() {
-		imageButton = findViewById(R.id.delete);
+		ImageButton imageButton = findViewById(R.id.delete);
 		imageButton.setOnClickListener(view -> {
 			if (containsImage) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
