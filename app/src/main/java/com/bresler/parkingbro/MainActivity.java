@@ -19,6 +19,7 @@ import android.provider.MediaStore;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 	public static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
 	private static final int CAPTURE_CODE = 1001;
+	ImageButton imageButton;
 	TextView actualLocation;
 	ImageView imageView;
 	Uri imageUri;
@@ -163,10 +165,20 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	private void setupDeleteButton() {
+		imageButton = findViewById(R.id.delete);
+		imageButton.setOnClickListener(view -> {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				imageView.setImageResource(R.drawable.ic_baseline_image_24);
+			}
+		});
+	}
+
 	private void setupButtons() {
 		setupNavigateButton();
 		setupSaveButton();
 		setupCameraButton();
+		setupDeleteButton();
 	}
 
 	private void initializeLocation() {
