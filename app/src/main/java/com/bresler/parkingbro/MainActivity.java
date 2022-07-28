@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 			actualLocation.setText(saveLocation());
+			Toast.makeText(this, "Location saved!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
@@ -146,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
 		button.setOnClickListener(v -> {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, getNavigationURL());
 			startActivity(browserIntent);
+			Toast.makeText(this, "Launching navigation app!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
@@ -171,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
 			}
+			Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
