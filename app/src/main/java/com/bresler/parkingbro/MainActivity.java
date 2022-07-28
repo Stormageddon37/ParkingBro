@@ -22,7 +22,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,10 +45,6 @@ public class MainActivity extends AppCompatActivity {
 	TextView actualLocation;
 	ImageView imageView;
 	Uri imageUri;
-
-	private void makeToast(String text) {
-		Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-	}
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -124,9 +119,9 @@ public class MainActivity extends AppCompatActivity {
 		Location currentLocation = getOptimalLocation();
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
-			makeToast("Unable to get location");
+			Toaster.error(this, "Unable to get location");
 		if (!savedLocationSuccessfully(locationString)) {
-			makeToast("Location saving failed, please try again later");
+			Toaster.error(this, "Location saving failed, please try again later");
 		}
 		return locationString;
 	}
@@ -135,11 +130,11 @@ public class MainActivity extends AppCompatActivity {
 		Button button = findViewById(R.id.save);
 		button.setOnClickListener(v -> {
 			if (!checkLocationPermission()) {
-				makeToast("You must allow location service to use this app");
+				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
 			actualLocation.setText(saveLocation());
-			makeToast("Location saved!");
+			Toaster.success(this, "Location saved!");
 		});
 	}
 
@@ -147,8 +142,8 @@ public class MainActivity extends AppCompatActivity {
 		Button button = findViewById(R.id.navigate);
 		button.setOnClickListener(v -> {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, getNavigationURL());
+			Toaster.info(this, "Launching navigation app!");
 			startActivity(browserIntent);
-			makeToast("Launching navigation app!");
 		});
 	}
 
@@ -173,10 +168,10 @@ public class MainActivity extends AppCompatActivity {
 		imageButton.setOnClickListener(view -> {
 			if (containsImage) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
-				makeToast("Latest image deleted!");
+				Toaster.success(this, "Latest image deleted!");
 				containsImage = false;
 			} else {
-				makeToast("No stashed images found!");
+				Toaster.info(this, "No stashed images found!");
 			}
 		});
 	}
@@ -229,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
 			} else {
-				makeToast("Permission denied!");
+				Toaster.error(this, "Permission denied!");
 			}
 		}
 	}
@@ -239,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (resultCode == RESULT_OK) {
 			imageView.setImageURI(imageUri);
-			makeToast("Saved image!");
+			Toaster.success(this, "Saved image!");
 			containsImage = true;
 		}
 	}
