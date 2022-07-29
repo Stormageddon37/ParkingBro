@@ -32,6 +32,8 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import es.dmoral.toasty.Toasty;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -213,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
 		setupActionBar();
 		setupStatusBar();
 		initializeLocation();
+		Toasty.Config.getInstance().allowQueue(false).apply();
 	}
 
 	@Override
