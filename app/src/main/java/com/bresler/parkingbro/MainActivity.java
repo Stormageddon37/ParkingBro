@@ -117,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
-//		values.put(MediaStore.Images.Media.LATITUDE, "");
-//		values.put(MediaStore.Images.Media.LONGITUDE, "");
 		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
