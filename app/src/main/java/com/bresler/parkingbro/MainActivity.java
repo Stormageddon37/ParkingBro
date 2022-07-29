@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.icu.text.SimpleDateFormat;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -32,12 +33,15 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Date;
+import java.util.Locale;
+
 import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
 
-
 	private static final String LOCATION_PREFS_INDEX = "location";
+	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
 	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
@@ -99,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
 		return MainActivity.this.getPreferences(MODE_PRIVATE).edit().putString(LOCATION_PREFS_INDEX, locationString).commit();
 	}
 
+	private boolean savedTimestampSuccessfully(String timestamp) {
+		return MainActivity.this.getPreferences(MODE_PRIVATE).edit().putString(TIMESTAMP_PREFS_INDEX, timestamp).commit();
+	}
+
 	private Uri getNavigationURL() {
 		SharedPreferences sharedPreferences = MainActivity.this.getPreferences(MODE_PRIVATE);
 		String url = googleMaps + sharedPreferences.getString(LOCATION_PREFS_INDEX, "0.0,0.0");
@@ -107,10 +115,11 @@ public class MainActivity extends AppCompatActivity {
 
 	public void openCamera() {
 		ContentValues values = new ContentValues();
-		values.put(MediaStore.Images.Media.TITLE, "new image");
+		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
+//		values.put(MediaStore.Images.Media.LATITUDE, "");
+//		values.put(MediaStore.Images.Media.LONGITUDE, "");
 		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
 		startActivityForResult(cameraIntent, CAPTURE_CODE);
@@ -121,12 +130,23 @@ public class MainActivity extends AppCompatActivity {
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
 			Toaster.error(this, "Unable to get location");
-		if (!savedLocationSuccessfully(locationString)) {
+		if (!savedLocationSuccessfully(locationString) || !savedTimestampSuccessfully(getTimestamp())) {
 			Toaster.error(this, "Location saving failed, please try again later");
 		}
 		return locationString;
 	}
 
+	private String getTimestamp() {
+		String currentDate = null;
+		String currentTime = null;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+			currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()).replace('-', '/');
+			currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+		}
+		return currentDate + " @ " + currentTime;
+	}
+
+	@SuppressLint("SetTextI18n")
 	private void setupSaveButton() {
 		Button button = findViewById(R.id.save);
 		button.setOnClickListener(v -> {
@@ -134,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
-			actualLocation.setText(saveLocation());
+			actualLocation.setText(saveLocation() + '\n' + getTimestamp());
 			Toaster.success(this, "Location saved!");
 		});
 	}
@@ -186,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
 	private void initializeLocation() {
 		SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-		actualLocation.setText(sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown"));
+		String fullLocation = sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown") + '\n' + sharedPreferences.getString(TIMESTAMP_PREFS_INDEX, "Unknown");
+		actualLocation.setText(fullLocation);
 	}
 
 	private void setupActionBar() {
@@ -221,7 +242,6 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
 		if (requestCode == PERMISSION_CODE) {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
