@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.icu.text.SimpleDateFormat;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -22,7 +23,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,22 +33,23 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Date;
+import java.util.Locale;
+
+import es.dmoral.toasty.Toasty;
+
 public class MainActivity extends AppCompatActivity {
 
-
-	public static final String LOCATION_PREFS_INDEX = "location";
-	public static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
-	public static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
+	private static final String LOCATION_PREFS_INDEX = "location";
+	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
+	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
+	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
 	private static final int CAPTURE_CODE = 1001;
-	ImageButton imageButton;
-	TextView actualLocation;
-	ImageView imageView;
-	Uri imageUri;
-
-	private void failToast(String text) {
-		Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
-	}
+	private static boolean containsImage = false;
+	private TextView actualLocation;
+	private ImageView imageView;
+	private Uri imageUri;
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -102,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
 		return MainActivity.this.getPreferences(MODE_PRIVATE).edit().putString(LOCATION_PREFS_INDEX, locationString).commit();
 	}
 
+	private boolean savedTimestampSuccessfully(String timestamp) {
+		return MainActivity.this.getPreferences(MODE_PRIVATE).edit().putString(TIMESTAMP_PREFS_INDEX, timestamp).commit();
+	}
+
 	private Uri getNavigationURL() {
 		SharedPreferences sharedPreferences = MainActivity.this.getPreferences(MODE_PRIVATE);
 		String url = googleMaps + sharedPreferences.getString(LOCATION_PREFS_INDEX, "0.0,0.0");
@@ -110,10 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
 	public void openCamera() {
 		ContentValues values = new ContentValues();
-		values.put(MediaStore.Images.Media.TITLE, "new image");
+		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
 		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
 		startActivityForResult(cameraIntent, CAPTURE_CODE);
@@ -123,22 +127,33 @@ public class MainActivity extends AppCompatActivity {
 		Location currentLocation = getOptimalLocation();
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
-			failToast("Unable to get location");
-		if (!savedLocationSuccessfully(locationString)) {
-			failToast("Location saving failed, please try again later");
+			Toaster.error(this, "Unable to get location");
+		if (!savedLocationSuccessfully(locationString) || !savedTimestampSuccessfully(getTimestamp())) {
+			Toaster.error(this, "Location saving failed, please try again later");
 		}
 		return locationString;
 	}
 
+	private String getTimestamp() {
+		String currentDate = null;
+		String currentTime = null;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+			currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()).replace('-', '/');
+			currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+		}
+		return currentDate + " @ " + currentTime;
+	}
+
+	@SuppressLint("SetTextI18n")
 	private void setupSaveButton() {
 		Button button = findViewById(R.id.save);
 		button.setOnClickListener(v -> {
 			if (!checkLocationPermission()) {
-				failToast("You must allow location service to use this app");
+				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
-			actualLocation.setText(saveLocation());
-			Toast.makeText(this, "Location saved!", Toast.LENGTH_SHORT).show();
+			actualLocation.setText(saveLocation() + '\n' + getTimestamp());
+			Toaster.success(this, "Location saved!");
 		});
 	}
 
@@ -146,8 +161,8 @@ public class MainActivity extends AppCompatActivity {
 		Button button = findViewById(R.id.navigate);
 		button.setOnClickListener(v -> {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, getNavigationURL());
+			Toaster.info(this, "Launching navigation app!");
 			startActivity(browserIntent);
-			Toast.makeText(this, "Launching navigation app!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
@@ -168,12 +183,15 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void setupDeleteButton() {
-		imageButton = findViewById(R.id.delete);
+		ImageButton imageButton = findViewById(R.id.delete);
 		imageButton.setOnClickListener(view -> {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (containsImage) {
 				imageView.setImageResource(R.drawable.ic_baseline_image_24);
+				Toaster.success(this, "Latest image deleted!");
+				containsImage = false;
+			} else {
+				Toaster.info(this, "No stashed images found!");
 			}
-			Toast.makeText(this, "Latest image deleted!", Toast.LENGTH_SHORT).show();
 		});
 	}
 
@@ -186,7 +204,8 @@ public class MainActivity extends AppCompatActivity {
 
 	private void initializeLocation() {
 		SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-		actualLocation.setText(sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown"));
+		String fullLocation = sharedPreferences.getString(LOCATION_PREFS_INDEX, "Unknown") + '\n' + sharedPreferences.getString(TIMESTAMP_PREFS_INDEX, "Unknown");
+		actualLocation.setText(fullLocation);
 	}
 
 	private void setupActionBar() {
@@ -215,17 +234,17 @@ public class MainActivity extends AppCompatActivity {
 		setupActionBar();
 		setupStatusBar();
 		initializeLocation();
+		Toasty.Config.getInstance().allowQueue(false).apply();
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
 		if (requestCode == PERMISSION_CODE) {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
 			} else {
-				Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+				Toaster.error(this, "Permission denied!");
 			}
 		}
 	}
@@ -235,6 +254,8 @@ public class MainActivity extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (resultCode == RESULT_OK) {
 			imageView.setImageURI(imageUri);
+			Toaster.success(this, "Saved image!");
+			containsImage = true;
 		}
 	}
 
