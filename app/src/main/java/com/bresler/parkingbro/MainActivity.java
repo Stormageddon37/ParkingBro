@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 		Location currentLocation = getOptimalLocation();
 		String locationString = stringifyLocation(currentLocation);
 		if (locationString == null)
-			Toaster.error(this, "Unable to get location");
+			Toaster.error(this, "Could not get location");
 		if (!savedLocationSuccessfully(locationString) || !savedTimestampSuccessfully(getTimestamp())) {
 			Toaster.error(this, "Location saving failed, please try again later");
 		}
@@ -152,7 +152,12 @@ public class MainActivity extends AppCompatActivity {
 				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
-			actualLocation.setText(saveLocation() + '\n' + getTimestamp());
+			String location = saveLocation();
+			if (location != null) {
+				actualLocation.setText(saveLocation() + '\n' + getTimestamp());
+			} else {
+				Toaster.error(this, "Could not get location");
+			}
 			Toaster.success(this, "Location saved!");
 		});
 	}
