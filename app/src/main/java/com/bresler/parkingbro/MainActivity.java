@@ -2,6 +2,7 @@ package com.bresler.parkingbro;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,8 +25,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -40,16 +42,26 @@ import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
 
+
 	private static final String LOCATION_PREFS_INDEX = "location";
 	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
 	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
-	private static final int CAPTURE_CODE = 1001;
 	private static boolean containsImage = false;
 	private TextView actualLocation;
 	private ImageView imageView;
 	private Uri imageUri;
+
+	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result -> {
+				if (result.getResultCode() == Activity.RESULT_OK) {
+					imageView.setImageURI(imageUri);
+					Toaster.success(this, "Saved image!");
+					containsImage = true;
+				}
+			});
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -125,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
 		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-		startActivityForResult(cameraIntent, CAPTURE_CODE);
+//		startActivityForResult(cameraIntent, CAPTURE_CODE);
+		someActivityResultLauncher.launch(cameraIntent);
 	}
 
 	private String getTimestamp() {
@@ -255,16 +268,6 @@ public class MainActivity extends AppCompatActivity {
 			} else {
 				Toaster.error(this, "Permission denied!");
 			}
-		}
-	}
-
-	@SuppressLint("MissingSuperCall")
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if (resultCode == RESULT_OK) {
-			imageView.setImageURI(imageUri);
-			Toaster.success(this, "Saved image!");
-			containsImage = true;
 		}
 	}
 
