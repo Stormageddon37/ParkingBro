@@ -53,15 +53,13 @@ public class MainActivity extends AppCompatActivity {
 	private ImageView imageView;
 	private Uri imageUri;
 
-	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
-			new ActivityResultContracts.StartActivityForResult(),
-			result -> {
-				if (result.getResultCode() == Activity.RESULT_OK) {
-					imageView.setImageURI(imageUri);
-					Toaster.success(this, "Saved image!");
-					containsImage = true;
-				}
-			});
+	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+		if (result.getResultCode() == Activity.RESULT_OK) {
+			imageView.setImageURI(imageUri);
+			Toaster.success(this, "Saved image!");
+			containsImage = true;
+		}
+	});
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -76,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 				.show();
 	}
 
-	public boolean checkLocationPermission() {
+	private boolean checkLocationPermission() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
 				showPermissionsDialog();
@@ -130,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 		return Uri.parse(url);
 	}
 
-	public void openCamera() {
+	private void openCamera() {
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
@@ -247,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private void findViews() {
 		imageView = findViewById(R.id.image_view);
-		actualLocation = findViewById(R.id.actualLocation);
+		actualLocation = findViewById(R.id.savedLocation);
 	}
 
 	private void setup() {
