@@ -107,6 +107,11 @@ public class MainActivity extends AppCompatActivity {
 		return MainActivity.this.getPreferences(MODE_PRIVATE).edit().putString(TIMESTAMP_PREFS_INDEX, timestamp).commit();
 	}
 
+	private boolean savedDataSuccessfully(String locationString, String timestamp) {
+		if (locationString == null) return false;
+		return savedLocationSuccessfully(locationString) && savedTimestampSuccessfully(timestamp);
+	}
+
 	private Uri getNavigationURL() {
 		SharedPreferences sharedPreferences = MainActivity.this.getPreferences(MODE_PRIVATE);
 		String url = googleMaps + sharedPreferences.getString(LOCATION_PREFS_INDEX, "0.0,0.0");
@@ -123,25 +128,24 @@ public class MainActivity extends AppCompatActivity {
 		startActivityForResult(cameraIntent, CAPTURE_CODE);
 	}
 
-	private String saveLocation() {
-		Location currentLocation = getOptimalLocation();
-		String locationString = stringifyLocation(currentLocation);
-		if (locationString == null)
-			Toaster.error(this, "Unable to get location");
-		if (!savedLocationSuccessfully(locationString) || !savedTimestampSuccessfully(getTimestamp())) {
-			Toaster.error(this, "Location saving failed, please try again later");
-		}
-		return locationString;
-	}
-
 	private String getTimestamp() {
-		String currentDate = null;
-		String currentTime = null;
+		String currentDate = "";
+		String currentTime = "";
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
 			currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()).replace('-', '/');
 			currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 		}
 		return currentDate + " @ " + currentTime;
+	}
+
+	private String saveLocation() {
+		String locationString = stringifyLocation(getOptimalLocation());
+		String timestampString = getTimestamp();
+		if (locationString == null)
+			Toaster.error(this, "Could not get location");
+		if (!savedDataSuccessfully(locationString, timestampString))
+			Toaster.error(this, "Location saving failed, please try again later");
+		return locationString;
 	}
 
 	@SuppressLint("SetTextI18n")
@@ -152,8 +156,13 @@ public class MainActivity extends AppCompatActivity {
 				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
-			actualLocation.setText(saveLocation() + '\n' + getTimestamp());
-			Toaster.success(this, "Location saved!");
+			String locationString = saveLocation();
+			if (locationString != null) {
+				actualLocation.setText(locationString + '\n' + getTimestamp());
+				Toaster.success(this, "Location saved!");
+			} else {
+				Toaster.error(this, "Could not get location");
+			}
 		});
 	}
 
