@@ -61,6 +61,19 @@ public class MainActivity extends AppCompatActivity {
 		}
 	});
 
+	private static Object[] pushNullsToEnd(Object[] array) {
+		int j = 0;
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != null) {
+				Object temp = array[j];
+				array[j] = array[i];
+				array[i] = temp;
+				j++;
+			}
+		}
+		return array;
+	}
+
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
 	}
@@ -209,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
 		setupNavigateButton();
 		setupSaveButton();
 		setupCameraButton();
+		setupImageButtons();
 	}
 
 	private void initializeLocation() {
@@ -242,13 +256,56 @@ public class MainActivity extends AppCompatActivity {
 	private void setupImageButtons() {
 		for (int i = 0; i < imageViews.length; i++) {
 			int finalI = i;
+
 			imageViews[i].setOnClickListener(view -> {
 				if (imageUris[finalI] == null) return;
 				Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
 				intent.putExtra("imageUri", imageUris[finalI].toString());
 				startActivity(intent);
 			});
+
+			imageViews[i].setOnLongClickListener(view -> {
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				builder.setCancelable(true);
+				if (imageUris[finalI] == null) {
+					builder.setTitle("Add image?");
+					builder.setPositiveButton("Yes", (dialog, id) -> openCamera());
+					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
+				} else {
+					builder.setTitle("Remove image?");
+					builder.setPositiveButton("Yes", (dialog, id) -> removeImage(finalI));
+					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
+				}
+				builder.create().show();
+				return false;
+			});
 		}
+	}
+
+	private void removeImage(int index) {
+		if (imageUris[index] != null) {
+			imageViews[index].setImageResource(R.drawable.ic_baseline_image_24);
+			Toaster.success(this, "Removed image #" + index + '!');
+		} else {
+			Toaster.error(this, "No image here!");
+		}
+		imageUris[index] = null;
+		updateImageArray();
+		currentImages--;
+	}
+
+	private void redrawImages() {
+		for (int i = 0; i < imageViews.length; i++) {
+			if (imageUris[i] != null)
+				imageViews[i].setImageURI(imageUris[i]);
+			else
+				imageViews[i].setImageResource(R.drawable.ic_baseline_image_24);
+		}
+	}
+
+	private void updateImageArray() {
+		imageUris = (Uri[]) pushNullsToEnd(imageUris);
+		redrawImages();
 	}
 
 	private void setup() {
@@ -259,7 +316,6 @@ public class MainActivity extends AppCompatActivity {
 		setupActionBar();
 		setupStatusBar();
 		initializeLocation();
-		setupImageButtons();
 		Toasty.Config.getInstance().allowQueue(false).apply();
 	}
 
