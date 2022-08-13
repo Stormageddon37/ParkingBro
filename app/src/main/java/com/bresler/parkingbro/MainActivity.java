@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
 	private void removeImage(int index) {
 		if (imageUris[index] != null) {
 			imageViews[index].setImageResource(R.drawable.ic_baseline_image_24);
-			Toaster.success(this, "Removed image #" + index + '!');
+			Toaster.success(this, "Removed image!");
 		} else {
 			Toaster.error(this, "No image here!");
 		}
