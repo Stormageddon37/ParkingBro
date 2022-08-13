@@ -21,7 +21,6 @@ import android.provider.MediaStore;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,23 +42,37 @@ import es.dmoral.toasty.Toasty;
 public class MainActivity extends AppCompatActivity {
 
 
-	private static final String LOCATION_PREFS_INDEX = "location";
-	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
+	private static final int MAXIMUM_IMAGES_ALLOWED = Config.MAXIMUM_IMAGES_ALLOWED;
+	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
-	private static final int PERMISSION_CODE = 1234;
-	private static boolean containsImage = false;
+	private static final int PERMISSION_REQUEST_OPEN_CAMERA = 1234;
+	private static final String LOCATION_PREFS_INDEX = "location";
 	private TextView actualLocation;
-	private ImageView imageView;
-	private Uri imageUri;
+	private ImageView[] imageViews;
+	private int currentImages = 0;
+	private Uri[] imageUris;
 
 	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
-			imageView.setImageURI(imageUri);
+			imageViews[currentImages].setImageURI(imageUris[currentImages]);
 			Toaster.success(this, "Saved image!");
-			containsImage = true;
+			currentImages++;
 		}
 	});
+
+	private static Object[] pushNullsToEnd(Object[] array) {
+		int j = 0;
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != null) {
+				Object temp = array[j];
+				array[j] = array[i];
+				array[i] = temp;
+				j++;
+			}
+		}
+		return array;
+	}
 
 	private void addLocationPermission() {
 		ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_SAVE);
@@ -129,13 +142,16 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void openCamera() {
+		if (currentImages == MAXIMUM_IMAGES_ALLOWED) {
+			Toaster.error(this, "Maximum images reached!");
+			return;
+		}
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
-		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+		imageUris[currentImages] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-//		startActivityForResult(cameraIntent, CAPTURE_CODE);
+		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUris[currentImages]);
 		someActivityResultLauncher.launch(cameraIntent);
 	}
 
@@ -192,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
 					String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-					requestPermissions(permissions, PERMISSION_CODE);
+					requestPermissions(permissions, PERMISSION_REQUEST_OPEN_CAMERA);
 				} else {
 					openCamera();
 				}
@@ -202,24 +218,11 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	private void setupDeleteButton() {
-		ImageButton imageButton = findViewById(R.id.delete);
-		imageButton.setOnClickListener(view -> {
-			if (containsImage) {
-				imageView.setImageResource(R.drawable.ic_baseline_image_24);
-				Toaster.success(this, "Latest image deleted!");
-				containsImage = false;
-			} else {
-				Toaster.info(this, "No stashed images found!");
-			}
-		});
-	}
-
 	private void setupButtons() {
 		setupNavigateButton();
 		setupSaveButton();
 		setupCameraButton();
-		setupDeleteButton();
+		setupImageButtons();
 	}
 
 	private void initializeLocation() {
@@ -244,11 +247,70 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void findViews() {
-		imageView = findViewById(R.id.image_view);
+		imageViews[0] = findViewById(R.id.image_view_0);
+		imageViews[1] = findViewById(R.id.image_view_1);
+		imageViews[2] = findViewById(R.id.image_view_2);
 		actualLocation = findViewById(R.id.savedLocation);
 	}
 
+	private void setupImageButtons() {
+		for (int i = 0; i < imageViews.length; i++) {
+			int finalI = i;
+
+			imageViews[i].setOnClickListener(view -> {
+				if (imageUris[finalI] == null) return;
+				Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
+				intent.putExtra("imageUri", imageUris[finalI].toString());
+				startActivity(intent);
+			});
+
+			imageViews[i].setOnLongClickListener(view -> {
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				builder.setCancelable(true);
+				if (imageUris[finalI] == null) {
+					builder.setTitle("Add image?");
+					builder.setPositiveButton("Yes", (dialog, id) -> openCamera());
+					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
+				} else {
+					builder.setTitle("Remove image?");
+					builder.setPositiveButton("Yes", (dialog, id) -> removeImage(finalI));
+					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
+				}
+				builder.create().show();
+				return false;
+			});
+		}
+	}
+
+	private void removeImage(int index) {
+		if (imageUris[index] != null) {
+			imageViews[index].setImageResource(R.drawable.ic_baseline_image_24);
+			Toaster.success(this, "Removed image!");
+		} else {
+			Toaster.error(this, "No image here!");
+		}
+		imageUris[index] = null;
+		updateImageArray();
+		currentImages--;
+	}
+
+	private void redrawImages() {
+		for (int i = 0; i < imageViews.length; i++) {
+			if (imageUris[i] != null)
+				imageViews[i].setImageURI(imageUris[i]);
+			else
+				imageViews[i].setImageResource(R.drawable.ic_baseline_image_24);
+		}
+	}
+
+	private void updateImageArray() {
+		imageUris = (Uri[]) pushNullsToEnd(imageUris);
+		redrawImages();
+	}
+
 	private void setup() {
+		imageUris = new Uri[MAXIMUM_IMAGES_ALLOWED];
+		imageViews = new ImageView[MAXIMUM_IMAGES_ALLOWED];
 		findViews();
 		setupButtons();
 		setupActionBar();
@@ -260,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode == PERMISSION_CODE) {
+		if (requestCode == PERMISSION_REQUEST_OPEN_CAMERA) {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
 			} else {

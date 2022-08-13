@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="@color/dark_background">
+
+	<ImageView
+		android:id="@+id/full_image"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:scaleType="fitCenter"
+		tools:ignore="ContentDescription" />
+
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+		android:id="@+id/back"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_margin="20dp"
+		android:adjustViewBounds="true"
+		android:backgroundTint="@color/green"
+		android:src="@drawable/ic_baseline_arrow_back_24"
+		android:tint="@android:color/white"
+		app:borderWidth="0dp"
+		app:fabSize="normal"
+		app:iconSize="32dip"
+		app:maxImageSize="32dip"
+		app:rippleColor="@color/white"
+		app:tint="@color/white"
+		tools:ignore="ContentDescription" />
+
+</RelativeLayout>

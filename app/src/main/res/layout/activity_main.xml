@@ -12,9 +12,9 @@
 		style="@style/Widget.MaterialComponents.Button.Icon"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="8dp"
+		android:layout_marginStart="8dp"
 		android:layout_marginTop="40dp"
-		android:layout_marginRight="8dp"
+		android:layout_marginEnd="8dp"
 		android:background="@drawable/button_shape"
 		android:text="@string/save_current_location"
 		android:textAlignment="center"
@@ -24,40 +24,40 @@
 		app:icon="@drawable/ic_baseline_location_on_24"
 		app:iconSize="32dip"
 		app:iconTint="@color/white"
+		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintHorizontal_bias="0.5"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toTopOf="parent"
 		app:rippleColor="@color/white" />
 
 	<TextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="8dp"
+		android:layout_marginStart="8dp"
 		android:layout_marginTop="40dp"
-		android:layout_marginRight="8dp"
+		android:layout_marginEnd="8dp"
 		android:text="@string/last_saved_location"
 		android:textAlignment="center"
 		android:textColor="@color/white"
 		android:textSize="18sp"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/save" />
 
 	<TextView
 		android:id="@+id/savedLocation"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="8dp"
+		android:layout_marginStart="8dp"
 		android:layout_marginTop="70dp"
-		android:layout_marginRight="8dp"
+		android:layout_marginEnd="8dp"
 		android:textAlignment="center"
 		android:textColor="@color/white"
 		android:textSize="22sp"
 		android:textStyle="bold"
+		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintHorizontal_bias="0.5"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/save" />
 
 	<com.google.android.material.button.MaterialButton
@@ -75,8 +75,8 @@
 		app:icon="@drawable/ic_baseline_directions_walk_24"
 		app:iconSize="32dip"
 		app:iconTint="@color/white"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/savedLocation"
 		app:rippleColor="@color/white" />
 
@@ -98,31 +98,63 @@
 		app:srcCompat="@drawable/ic_baseline_photo_camera_24"
 		app:tint="@color/white" />
 
-	<ImageView
-		android:id="@+id/image_view"
-		android:layout_width="200dp"
-		android:layout_height="200dp"
-		android:layout_marginTop="30dp"
-		android:contentDescription="Image"
-		android:src="@drawable/ic_baseline_image_24"
-		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/navigate"
-		tools:ignore="HardcodedText" />
-
-	<ImageButton
-		android:id="@+id/delete"
-		style="@style/Widget.MaterialComponents.Button.Icon"
-		android:layout_width="wrap_content"
+	<LinearLayout
+		android:id="@+id/linear"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:background="@drawable/button_shape"
-		android:contentDescription="Delete the current stashed image"
-		android:scaleType="fitCenter"
-		android:src="@drawable/ic_baseline_delete_24"
-		app:backgroundTint="@color/green"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/image_view"
-		tools:ignore="HardcodedText" />
+		android:layout_marginStart="48dp"
+		android:layout_marginEnd="48dp"
+		android:orientation="horizontal"
+		android:weightSum="3"
+		app:layout_constraintTop_toBottomOf="@id/navigate">
+
+		<ImageView
+			android:id="@+id/image_view_0"
+			android:layout_width="0dp"
+			android:layout_height="90dp"
+			android:layout_marginTop="30dp"
+			android:layout_weight="1"
+			android:adjustViewBounds="true"
+			android:contentDescription="Image"
+			android:scaleType="fitCenter"
+			android:src="@drawable/ic_baseline_image_24"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/navigate"
+			tools:ignore="HardcodedText" />
+
+		<ImageView
+			android:id="@+id/image_view_1"
+			android:layout_width="0dp"
+			android:layout_height="90dp"
+			android:layout_marginTop="30dp"
+			android:layout_weight="1"
+			android:adjustViewBounds="true"
+			android:contentDescription="Image"
+			android:scaleType="fitCenter"
+			android:src="@drawable/ic_baseline_image_24"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/navigate"
+			tools:ignore="HardcodedText" />
+
+
+		<ImageView
+			android:id="@+id/image_view_2"
+			android:layout_width="0dp"
+			android:layout_height="90dp"
+			android:layout_marginTop="30dp"
+			android:layout_weight="1"
+			android:adjustViewBounds="true"
+			android:contentDescription="Image"
+			android:scaleType="fitCenter"
+			android:src="@drawable/ic_baseline_image_24"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@+id/navigate"
+			tools:ignore="HardcodedText" />
+
+
+	</LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
