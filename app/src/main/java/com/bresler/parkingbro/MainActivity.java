@@ -21,7 +21,6 @@ import android.provider.MediaStore;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,16 +47,28 @@ public class MainActivity extends AppCompatActivity {
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
 	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
 	private static final int PERMISSION_CODE = 1234;
-	private static boolean containsImage = false;
 	private TextView actualLocation;
-	private ImageView imageView;
-	private Uri imageUri;
+	private ImageView imageView0;
+	private ImageView imageView1;
+	private ImageView imageView2;
+	private Uri[] imageUris;
+	private int images = 0; // {0,1,2,3}
 
 	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
-			imageView.setImageURI(imageUri);
+			switch (images) {
+				case 0:
+					imageView0.setImageURI(imageUris[0]);
+					break;
+				case 1:
+					imageView1.setImageURI(imageUris[1]);
+					break;
+				case 2:
+					imageView2.setImageURI(imageUris[2]);
+					break;
+			}
 			Toaster.success(this, "Saved image!");
-			containsImage = true;
+			images++;
 		}
 	});
 
@@ -129,13 +140,16 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void openCamera() {
+		if (images == 3) {
+			Toaster.error(this, "Maximum images reached!");
+			return;
+		}
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
-		imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+		imageUris[images] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-//		startActivityForResult(cameraIntent, CAPTURE_CODE);
+		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUris[images]);
 		someActivityResultLauncher.launch(cameraIntent);
 	}
 
@@ -202,24 +216,10 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	private void setupDeleteButton() {
-		ImageButton imageButton = findViewById(R.id.delete);
-		imageButton.setOnClickListener(view -> {
-			if (containsImage) {
-				imageView.setImageResource(R.drawable.ic_baseline_image_24);
-				Toaster.success(this, "Latest image deleted!");
-				containsImage = false;
-			} else {
-				Toaster.info(this, "No stashed images found!");
-			}
-		});
-	}
-
 	private void setupButtons() {
 		setupNavigateButton();
 		setupSaveButton();
 		setupCameraButton();
-		setupDeleteButton();
 	}
 
 	private void initializeLocation() {
@@ -244,7 +244,9 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void findViews() {
-		imageView = findViewById(R.id.image_view);
+		imageView0 = findViewById(R.id.image_view_0);
+		imageView1 = findViewById(R.id.image_view_1);
+		imageView2 = findViewById(R.id.image_view_2);
 		actualLocation = findViewById(R.id.savedLocation);
 	}
 
@@ -255,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
 		setupStatusBar();
 		initializeLocation();
 		Toasty.Config.getInstance().allowQueue(false).apply();
+		imageUris = new Uri[3];
 	}
 
 	@Override
