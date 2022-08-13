@@ -42,33 +42,22 @@ import es.dmoral.toasty.Toasty;
 public class MainActivity extends AppCompatActivity {
 
 
-	private static final String LOCATION_PREFS_INDEX = "location";
-	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
+	private static final int MAXIMUM_IMAGES_ALLOWED = Config.MAXIMUM_IMAGES_ALLOWED;
+	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
 	private static final int PERMISSION_REQUEST_LOCATION_SAVE = 99;
-	private static final int PERMISSION_CODE = 1234;
+	private static final int PERMISSION_REQUEST_OPEN_CAMERA = 1234;
+	private static final String LOCATION_PREFS_INDEX = "location";
 	private TextView actualLocation;
-	private ImageView imageView0;
-	private ImageView imageView1;
-	private ImageView imageView2;
+	private ImageView[] imageViews;
+	private int currentImages = 0;
 	private Uri[] imageUris;
-	private int images = 0; // {0,1,2,3}
 
 	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
-			switch (images) {
-				case 0:
-					imageView0.setImageURI(imageUris[0]);
-					break;
-				case 1:
-					imageView1.setImageURI(imageUris[1]);
-					break;
-				case 2:
-					imageView2.setImageURI(imageUris[2]);
-					break;
-			}
+			imageViews[currentImages].setImageURI(imageUris[currentImages]);
 			Toaster.success(this, "Saved image!");
-			images++;
+			currentImages++;
 		}
 	});
 
@@ -140,16 +129,16 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void openCamera() {
-		if (images == 3) {
+		if (currentImages == MAXIMUM_IMAGES_ALLOWED) {
 			Toaster.error(this, "Maximum images reached!");
 			return;
 		}
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.Images.Media.TITLE, "");
 		values.put(MediaStore.Images.Media.DESCRIPTION, "");
-		imageUris[images] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+		imageUris[currentImages] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUris[images]);
+		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUris[currentImages]);
 		someActivityResultLauncher.launch(cameraIntent);
 	}
 
@@ -206,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
 					String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-					requestPermissions(permissions, PERMISSION_CODE);
+					requestPermissions(permissions, PERMISSION_REQUEST_OPEN_CAMERA);
 				} else {
 					openCamera();
 				}
@@ -244,26 +233,40 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void findViews() {
-		imageView0 = findViewById(R.id.image_view_0);
-		imageView1 = findViewById(R.id.image_view_1);
-		imageView2 = findViewById(R.id.image_view_2);
+		imageViews[0] = findViewById(R.id.image_view_0);
+		imageViews[1] = findViewById(R.id.image_view_1);
+		imageViews[2] = findViewById(R.id.image_view_2);
 		actualLocation = findViewById(R.id.savedLocation);
 	}
 
+	private void setupImageButtons() {
+		for (int i = 0; i < imageViews.length; i++) {
+			int finalI = i;
+			imageViews[i].setOnClickListener(view -> {
+				if (imageUris[finalI] == null) return;
+				Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
+				intent.putExtra("imageUri", imageUris[finalI].toString());
+				startActivity(intent);
+			});
+		}
+	}
+
 	private void setup() {
+		imageUris = new Uri[MAXIMUM_IMAGES_ALLOWED];
+		imageViews = new ImageView[MAXIMUM_IMAGES_ALLOWED];
 		findViews();
 		setupButtons();
 		setupActionBar();
 		setupStatusBar();
 		initializeLocation();
+		setupImageButtons();
 		Toasty.Config.getInstance().allowQueue(false).apply();
-		imageUris = new Uri[3];
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode == PERMISSION_CODE) {
+		if (requestCode == PERMISSION_REQUEST_OPEN_CAMERA) {
 			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 				openCamera();
 			} else {
