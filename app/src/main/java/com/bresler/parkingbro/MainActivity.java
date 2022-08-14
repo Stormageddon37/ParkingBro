@@ -4,8 +4,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -276,7 +278,10 @@ public class MainActivity extends AppCompatActivity {
 					builder.setPositiveButton("Yes", (dialog, id) -> removeImage(finalI));
 					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
 				}
-				builder.create().show();
+				AlertDialog alertDialog = builder.create();
+				alertDialog.show();
+				alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.green));
+				alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.green));
 				return false;
 			});
 		}
