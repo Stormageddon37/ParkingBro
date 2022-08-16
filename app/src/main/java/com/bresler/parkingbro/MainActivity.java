@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 	private int currentImages = 0;
 	private Uri[] imageUris;
 
-	ActivityResultLauncher<Intent> cameraActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+	final ActivityResultLauncher<Intent> cameraActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
 			imageViews[currentImages].setImageURI(imageUris[currentImages]);
 			Toaster.success(this, "Saved image!");
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	});
 
-	ActivityResultLauncher<Intent> displayImageActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+	final ActivityResultLauncher<Intent> displayImageActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
 			Intent intentData = result.getData();
 			if (intentData == null)
