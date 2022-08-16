@@ -54,11 +54,25 @@ public class MainActivity extends AppCompatActivity {
 	private int currentImages = 0;
 	private Uri[] imageUris;
 
-	ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+	ActivityResultLauncher<Intent> cameraActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 		if (result.getResultCode() == Activity.RESULT_OK) {
 			imageViews[currentImages].setImageURI(imageUris[currentImages]);
 			Toaster.success(this, "Saved image!");
 			currentImages++;
+		}
+	});
+
+	ActivityResultLauncher<Intent> displayImageActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+		if (result.getResultCode() == Activity.RESULT_OK) {
+			Intent intentData = result.getData();
+			if (intentData == null)
+				return;
+			Bundle bundle = intentData.getExtras();
+			boolean delete = bundle.getBoolean("delete");
+			int index = bundle.getInt("index");
+			if (delete) {
+				removeImage(index);
+			}
 		}
 	});
 
@@ -153,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
 		imageUris[currentImages] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUris[currentImages]);
-		someActivityResultLauncher.launch(cameraIntent);
+		cameraActivityResultLauncher.launch(cameraIntent);
 	}
 
 	private String getTimestamp() {
@@ -264,7 +278,8 @@ public class MainActivity extends AppCompatActivity {
 				} else {
 					Intent intent = new Intent(MainActivity.this, FullScreenImageActivity.class);
 					intent.putExtra("imageUri", imageUris[finalI].toString());
-					startActivity(intent);
+					intent.putExtra("index", finalI);
+					displayImageActivityResultLauncher.launch(intent);
 				}
 			});
 
