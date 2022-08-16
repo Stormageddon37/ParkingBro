@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class FullScreenImage extends AppCompatActivity {
+public class FullScreenImageActivity extends AppCompatActivity {
 
 	ImageView imageView;
 	FloatingActionButton button;
@@ -34,7 +34,7 @@ public class FullScreenImage extends AppCompatActivity {
 
 		imageView = findViewById(R.id.full_image);
 		button = findViewById(R.id.back);
-		button.setOnClickListener(v -> FullScreenImage.this.finish());
+		button.setOnClickListener(v -> FullScreenImageActivity.this.finish());
 		imageView.setImageURI(myUri);
 	}
 

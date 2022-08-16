@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
 				if (imageUris[finalI] == null) {
 					openCamera();
 				} else {
-					Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
+					Intent intent = new Intent(MainActivity.this, FullScreenImageActivity.class);
 					intent.putExtra("imageUri", imageUris[finalI].toString());
 					startActivity(intent);
 				}
