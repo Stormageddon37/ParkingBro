@@ -30,4 +30,20 @@
 		app:tint="@color/white"
 		tools:ignore="ContentDescription" />
 
+	<ImageButton
+		android:id="@+id/delete"
+		style="@style/Widget.MaterialComponents.Button.Icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_centerInParent="true"
+		android:layout_gravity="bottom"
+		android:layout_marginBottom="16dp"
+		android:background="@drawable/button_shape"
+		android:contentDescription="Delete the current image"
+		android:scaleType="fitCenter"
+		android:src="@drawable/ic_baseline_delete_24"
+		app:backgroundTint="@color/green"
+		tools:ignore="HardcodedText" />
+
 </RelativeLayout>
