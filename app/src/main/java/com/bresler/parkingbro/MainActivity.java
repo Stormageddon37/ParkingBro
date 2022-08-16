@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -260,28 +259,27 @@ public class MainActivity extends AppCompatActivity {
 			int finalI = i;
 
 			imageViews[i].setOnClickListener(view -> {
-				if (imageUris[finalI] == null) return;
-				Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
-				intent.putExtra("imageUri", imageUris[finalI].toString());
-				startActivity(intent);
+				if (imageUris[finalI] == null) {
+					openCamera();
+				} else {
+					Intent intent = new Intent(MainActivity.this, FullScreenImage.class);
+					intent.putExtra("imageUri", imageUris[finalI].toString());
+					startActivity(intent);
+				}
 			});
 
 			imageViews[i].setOnLongClickListener(view -> {
-				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-				builder.setCancelable(true);
-				if (imageUris[finalI] == null) {
-					builder.setTitle("Add image?");
-					builder.setPositiveButton("Yes", (dialog, id) -> openCamera());
-					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
-				} else {
+				if (imageUris[finalI] != null) {
+					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+					builder.setCancelable(true);
 					builder.setTitle("Remove image?");
 					builder.setPositiveButton("Yes", (dialog, id) -> removeImage(finalI));
 					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
+					AlertDialog alertDialog = builder.create();
+					alertDialog.show();
+					alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.green));
+					alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.green));
 				}
-				AlertDialog alertDialog = builder.create();
-				alertDialog.show();
-				alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.green));
-				alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.green));
 				return false;
 			});
 		}
