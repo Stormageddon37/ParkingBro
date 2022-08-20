@@ -274,7 +274,16 @@ public class MainActivity extends AppCompatActivity {
 
 			imageViews[i].setOnClickListener(view -> {
 				if (imageUris[finalI] == null) {
-					openCamera();
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+						if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+							String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+							requestPermissions(permissions, PERMISSION_REQUEST_OPEN_CAMERA);
+						} else {
+							openCamera();
+						}
+					} else {
+						openCamera();
+					}
 				} else {
 					Intent intent = new Intent(MainActivity.this, FullScreenImageActivity.class);
 					intent.putExtra("imageUri", imageUris[finalI].toString());
