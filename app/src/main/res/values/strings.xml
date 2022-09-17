@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">Parking Bro</string>
+	<string name="app_name">ParkingBro</string>
 	<string name="navigate_to_saved_location">Navigate To Saved Location</string>
 	<string name="save_current_location">Save Current Location</string>
 	<string name="last_saved_location">Last Saved Location:</string>
