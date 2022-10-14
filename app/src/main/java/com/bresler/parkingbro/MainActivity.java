@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,7 +42,6 @@ import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
 
-
 	private static final String googleMaps = "https://www.google.com/maps/search/?api=1&query=";
 	private static final int MAXIMUM_IMAGES_ALLOWED = Config.MAXIMUM_IMAGES_ALLOWED;
 	private static final String TIMESTAMP_PREFS_INDEX = "timestamp";
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	});
 
-	private static Object[] pushNullsToEnd(Object[] array) {
+	private static void pushNullsToEnd(Object[] array) {
 		int j = 0;
 		for (int i = 0; i < array.length; i++) {
 			if (array[i] != null) {
@@ -73,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
 				j++;
 			}
 		}
-		return array;
 	}
 
 	private void addLocationPermission() {
@@ -81,12 +78,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showPermissionsDialog() {
-		new AlertDialog.Builder(this)
-				.setTitle(R.string.title_location_permission)
-				.setMessage(R.string.text_location_permission)
-				.setPositiveButton(R.string.ok, (dialogInterface, i) -> addLocationPermission())
-				.create()
-				.show();
+		new AlertDialog.Builder(this).setTitle(R.string.title_location_permission).setMessage(R.string.text_location_permission).setPositiveButton(R.string.ok, (dialogInterface, i) -> addLocationPermission()).create().show();
 	}
 
 	private boolean checkLocationPermission() {
@@ -105,8 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private Location getOptimalLocation() {
 		LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-				ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			return null;
 		}
 		Location optimalLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -170,8 +161,7 @@ public class MainActivity extends AppCompatActivity {
 	private String saveLocation() {
 		String locationString = stringifyLocation(getOptimalLocation());
 		String timestampString = getTimestamp();
-		if (locationString == null)
-			Toaster.error(this, "Could not get location");
+		if (locationString == null) Toaster.error(this, "Could not get location");
 		if (!savedDataSuccessfully(locationString, timestampString))
 			Toaster.error(this, "Location saving failed, please try again later");
 		return locationString;
@@ -204,20 +194,22 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	private void setupCameraButton() {
-		FloatingActionButton cameraButton = findViewById(R.id.camera);
-		cameraButton.setOnClickListener(view -> {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-					String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-					requestPermissions(permissions, PERMISSION_REQUEST_OPEN_CAMERA);
-				} else {
-					openCamera();
-				}
+	private void openCameraWithPermissions() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+				String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+				requestPermissions(permissions, PERMISSION_REQUEST_OPEN_CAMERA);
 			} else {
 				openCamera();
 			}
-		});
+		} else {
+			openCamera();
+		}
+	}
+
+	private void setupCameraButton() {
+		FloatingActionButton cameraButton = findViewById(R.id.camera);
+		cameraButton.setOnClickListener(view -> openCameraWithPermissions());
 	}
 
 	private void setupButtons() {
@@ -271,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
 				builder.setCancelable(true);
 				if (imageUris[finalI] == null) {
 					builder.setTitle("Add image?");
-					builder.setPositiveButton("Yes", (dialog, id) -> openCamera());
+					builder.setPositiveButton("Yes", (dialog, id) -> openCameraWithPermissions());
 					builder.setNegativeButton("Cancel", (dialog, id) -> dialog.cancel());
 				} else {
 					builder.setTitle("Remove image?");
@@ -301,15 +293,13 @@ public class MainActivity extends AppCompatActivity {
 
 	private void redrawImages() {
 		for (int i = 0; i < imageViews.length; i++) {
-			if (imageUris[i] != null)
-				imageViews[i].setImageURI(imageUris[i]);
-			else
-				imageViews[i].setImageResource(R.drawable.ic_baseline_image_24);
+			if (imageUris[i] != null) imageViews[i].setImageURI(imageUris[i]);
+			else imageViews[i].setImageResource(R.drawable.ic_baseline_image_24);
 		}
 	}
 
 	private void updateImageArray() {
-		imageUris = (Uri[]) pushNullsToEnd(imageUris);
+		pushNullsToEnd(imageUris);
 		redrawImages();
 	}
 
