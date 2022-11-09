@@ -202,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
 			}
 			boolean userWantsDialog = sharedPreferences.getBoolean("dialog", true);
 			boolean userWantsFlush = sharedPreferences.getBoolean("flush", true);
-			System.out.println("DAD: " + userWantsDialog);
 			if (userWantsDialog && currentImages > 0) {
 				alert.show();
 			} else {
