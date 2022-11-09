@@ -19,9 +19,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -167,22 +170,61 @@ public class MainActivity extends AppCompatActivity {
 		return locationString;
 	}
 
-	@SuppressLint("SetTextI18n")
 	private void setupSaveButton() {
 		Button button = findViewById(R.id.save);
+		SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+		alertDialogBuilder.setTitle("Delete pictures?");
+		alertDialogBuilder.setMessage("Delete your saved pictures?");
+		alertDialogBuilder.setPositiveButton("YES", (dialog, which) -> {
+			MainActivity.this.getPreferences(MODE_PRIVATE).edit().putBoolean("flush", true).apply();
+			saveCurrentLocation(true);
+		});
+		alertDialogBuilder.setNegativeButton("NO", (dialogInterface, i) -> {
+			MainActivity.this.getPreferences(MODE_PRIVATE).edit().putBoolean("flush", false).apply();
+			saveCurrentLocation(false);
+		});
+
+		LayoutInflater inflater = getLayoutInflater();
+		View dialogView = inflater.inflate(R.layout.dialog_checkbox, null);
+		alertDialogBuilder.setView(dialogView);
+		CheckBox checkbox = dialogView.findViewById(R.id.checkbox);
+		checkbox.setOnCheckedChangeListener((compoundButton, isChecked) -> MainActivity.this.getPreferences(MODE_PRIVATE).edit().putBoolean("dialog", !isChecked).apply());
+
+		AlertDialog alert = alertDialogBuilder.create();
+		alert.setCanceledOnTouchOutside(false);
+
 		button.setOnClickListener(v -> {
 			if (!checkLocationPermission()) {
 				Toaster.error(this, "You must allow location service to use this app");
 				return;
 			}
-			String locationString = saveLocation();
-			if (locationString != null) {
-				actualLocation.setText(locationString + '\n' + getTimestamp());
-				Toaster.success(this, "Location saved!");
+			boolean userWantsDialog = sharedPreferences.getBoolean("dialog", true);
+			boolean userWantsFlush = sharedPreferences.getBoolean("flush", true);
+			System.out.println("DAD: " + userWantsDialog);
+			if (userWantsDialog && currentImages > 0) {
+				alert.show();
 			} else {
-				Toaster.error(this, "Could not get location");
+				saveCurrentLocation(userWantsFlush);
 			}
 		});
+	}
+
+	@SuppressLint("SetTextI18n")
+	private void saveCurrentLocation(boolean flushImages) {
+		String locationString = saveLocation();
+		if (locationString != null) {
+			actualLocation.setText(locationString + '\n' + getTimestamp());
+			Toaster.success(this, "Location saved!");
+		} else {
+			Toaster.error(this, "Could not get location");
+		}
+		if (flushImages) {
+			imageUris = new Uri[]{null, null, null};
+			currentImages = 0;
+			redrawImages();
+		}
 	}
 
 	private void setupNavigateButton() {

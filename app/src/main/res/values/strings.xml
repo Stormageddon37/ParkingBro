@@ -7,4 +7,5 @@
 	<string name="text_location_permission">Allow this app to access the location of this phone</string>
 	<string name="ok">OK</string>
 	<string name="adds_images">Add a new image</string>
+	<string name="remember_this_decision">Remember this decision</string>
 </resources>
