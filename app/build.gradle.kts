@@ -20,8 +20,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Signing is only configured when all env vars are set and the keystore exists
+    // (CI release); otherwise assembleRelease yields an unsigned APK.
+    val ksFile = System.getenv("KEYSTORE_FILE")?.let { file(it) }
+    val ksPass = System.getenv("KEYSTORE_PASSWORD")
+    val ksAlias = System.getenv("KEY_ALIAS")
+    val ksKeyPass = System.getenv("KEY_PASSWORD")
+    val canSign = ksFile != null && ksFile.exists() &&
+        !ksPass.isNullOrEmpty() && !ksAlias.isNullOrEmpty() && !ksKeyPass.isNullOrEmpty()
+    if (canSign) {
+        signingConfigs {
+            create("release") {
+                storeFile = ksFile
+                storePassword = ksPass
+                keyAlias = ksAlias
+                keyPassword = ksKeyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (canSign) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

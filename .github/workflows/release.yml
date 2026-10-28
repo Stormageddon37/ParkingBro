@@ -28,15 +28,23 @@ jobs:
       - name: Install Android SDK packages
         run: yes | sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 
-      # Debug-signed so it installs without a keystore. To ship a signed release
-      # build instead, add a signingConfig fed by repo secrets and swap in bundleRelease.
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Build signed release APK
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
 
       - name: Stage APK with version name
         env:
           TAG: ${{ github.event.release.tag_name }}
-        run: cp app/build/outputs/apk/debug/app-debug.apk "ParkingBro-${TAG}.apk"
+        run: cp app/build/outputs/apk/release/app-release.apk "ParkingBro-${TAG}.apk"
 
       - name: Attach APK to release
         env:
