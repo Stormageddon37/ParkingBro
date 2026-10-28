@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AutoSaveService : Service() {
-	private val decider = AutoSaveDecider() // not @Inject-able (no annotated ctor); one per service instance
+	@Inject lateinit var decider: AutoSaveDecider
 	@Inject lateinit var useCase: AutoSaveUseCase
 	@Inject lateinit var settings: AutoSaveSettings
 	@Inject lateinit var notifications: ParkingNotifications
