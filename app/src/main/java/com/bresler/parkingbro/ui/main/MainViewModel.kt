@@ -84,7 +84,7 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun performSave(flush: Boolean) {
-        val fix = location.lastKnownLocation()
+        val fix = location.currentLocation()
         if (fix == null) {
             _events.send(UiEvent.ShowToast(ToastType.ERROR, "Could not get location"))
         } else {

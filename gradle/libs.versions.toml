@@ -12,6 +12,7 @@ ksp = "2.2.20-2.0.2"
 datastore = "1.1.7"
 coil = "2.7.0"
 toasty = "1.5.2"
+playServicesLocation = "21.3.0"
 junit = "4.13.2"
 coroutinesTest = "1.10.2"
 turbine = "1.2.1"
@@ -39,6 +40,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 toasty = { group = "com.github.GrenderG", name = "Toasty", version.ref = "toasty" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
