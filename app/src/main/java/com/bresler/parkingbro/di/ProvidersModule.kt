@@ -4,6 +4,7 @@ import com.bresler.parkingbro.data.AndroidLocationProvider
 import com.bresler.parkingbro.data.DataStoreParkingStorage
 import com.bresler.parkingbro.data.MediaStoreImageStore
 import com.bresler.parkingbro.data.SystemClock
+import com.bresler.parkingbro.domain.AutoSaveSettings
 import com.bresler.parkingbro.domain.Clock
 import com.bresler.parkingbro.domain.ImageStore
 import com.bresler.parkingbro.domain.LocationProvider
@@ -25,6 +26,10 @@ abstract class ProvidersModule {
     @Binds
     @Singleton
     abstract fun bindParkingStorage(impl: DataStoreParkingStorage): ParkingStorage
+
+    @Binds
+    @Singleton
+    abstract fun bindAutoSaveSettings(impl: DataStoreParkingStorage): AutoSaveSettings
 
     @Binds
     abstract fun bindImageStore(impl: MediaStoreImageStore): ImageStore

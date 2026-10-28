@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.SharedPreferencesMigration
+import com.bresler.parkingbro.domain.AutoSaveSettings
 import com.bresler.parkingbro.domain.ParkingStorage
 import com.bresler.parkingbro.domain.SavedParking
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,7 +30,7 @@ private val Context.dataStore by preferencesDataStore(
 @Singleton
 class DataStoreParkingStorage @Inject constructor(
     @param:ApplicationContext private val context: Context,
-) : ParkingStorage {
+) : ParkingStorage, AutoSaveSettings {
 
     private object Keys {
         val LOCATION = stringPreferencesKey("location")
@@ -36,6 +38,8 @@ class DataStoreParkingStorage @Inject constructor(
         val DIALOG = booleanPreferencesKey("dialog")
         val FLUSH = booleanPreferencesKey("flush")
         val IMAGES = stringPreferencesKey("images")
+        val AUTO_SAVE_ENABLED = booleanPreferencesKey("auto_save_enabled")
+        val CAR_ADDRESSES = stringSetPreferencesKey("car_addresses")
     }
 
     private val data: Flow<Preferences> = context.dataStore.data
@@ -69,5 +73,17 @@ class DataStoreParkingStorage @Inject constructor(
 
     override suspend fun setImages(uris: List<String>) {
         context.dataStore.edit { it[Keys.IMAGES] = uris.joinToString("\n") }
+    }
+
+    override val enabled: Flow<Boolean> = data.map { it[Keys.AUTO_SAVE_ENABLED] ?: false }
+
+    override suspend fun setEnabled(value: Boolean) {
+        context.dataStore.edit { it[Keys.AUTO_SAVE_ENABLED] = value }
+    }
+
+    override val carAddresses: Flow<Set<String>> = data.map { it[Keys.CAR_ADDRESSES] ?: emptySet() }
+
+    override suspend fun setCarAddresses(value: Set<String>) {
+        context.dataStore.edit { it[Keys.CAR_ADDRESSES] = value }
     }
 }
