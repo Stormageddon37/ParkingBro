@@ -12,10 +12,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bresler.parkingbro.ui.fullscreen.FullScreenImageScreen
 import com.bresler.parkingbro.ui.main.MainScreen
+import com.bresler.parkingbro.ui.settings.SettingsScreen
 import com.bresler.parkingbro.ui.theme.ParkingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val ROUTE_MAIN = "main"
+private const val ROUTE_SETTINGS = "settings"
 private const val ARG_IMAGE_URI = "imageUri"
 private const val ROUTE_FULLSCREEN = "fullscreen/{$ARG_IMAGE_URI}"
 
@@ -33,7 +35,11 @@ class MainActivity : ComponentActivity() {
                             onOpenImage = { uri ->
                                 navController.navigate("fullscreen/${Uri.encode(uri.toString())}")
                             },
+                            onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
                         )
+                    }
+                    composable(ROUTE_SETTINGS) {
+                        SettingsScreen(onBack = { navController.popBackStack() })
                     }
                     composable(
                         route = ROUTE_FULLSCREEN,
