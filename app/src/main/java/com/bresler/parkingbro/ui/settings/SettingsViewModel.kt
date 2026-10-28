@@ -31,7 +31,10 @@ class SettingsViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingsUiState> =
         combine(settings.enabled, settings.carAddresses, bonded) { enabled, cars, devices ->
-            SettingsUiState(enabled, devices.map { DeviceRow(it.address, it.name, it.connected, it.address in cars) })
+            val rows = devices.map { DeviceRow(it.address, it.name, it.connected, it.address in cars) }
+            val listed = devices.map { it.address }.toSet()
+            // Tagged cars not currently bonded (BT off, permission missing, unpaired) stay visible/untaggable.
+            SettingsUiState(enabled, rows + (cars - listed).map { DeviceRow(it, it, false, true) })
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SettingsUiState())
 
     init {

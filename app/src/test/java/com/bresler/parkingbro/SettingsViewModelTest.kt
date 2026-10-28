@@ -55,6 +55,15 @@ class SettingsViewModelTest {
         )
     }
 
+    @Test fun taggedCarNotBonded_stillListed_andUntaggable() = runTest {
+        settings.carsFlow.value = setOf("ZZ")
+        val vm = vm()
+        assertEquals(DeviceRow("ZZ", "ZZ", false, true), vm.uiState.value.devices.last())
+        vm.onToggleCar("ZZ")
+        assertEquals(emptySet<String>(), settings.carsFlow.value)
+        assertEquals(devices.map { it.address }, vm.uiState.value.devices.map { it.address })
+    }
+
     @Test fun toggleCar_addsThenRemoves() = runTest {
         val vm = vm()
         vm.onToggleCar("AA")
