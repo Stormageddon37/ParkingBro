@@ -70,7 +70,9 @@ class AutoSaveService : Service() {
 			addAction(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED)
 			addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
 		}
-		ContextCompat.registerReceiver(this, r, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+		// These are protected system broadcasts (Bluetooth stack), so the receiver must be
+		// EXPORTED to receive them — NOT_EXPORTED only delivers same-app broadcasts.
+		ContextCompat.registerReceiver(this, r, filter, ContextCompat.RECEIVER_EXPORTED)
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int) = START_STICKY
