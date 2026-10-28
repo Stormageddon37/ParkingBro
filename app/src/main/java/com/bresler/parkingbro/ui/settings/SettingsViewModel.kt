@@ -37,7 +37,9 @@ class SettingsViewModel @Inject constructor(
             SettingsUiState(enabled, rows + (cars - listed).map { DeviceRow(it, it, false, true) })
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SettingsUiState())
 
-    init {
+    init { reloadDevices() }
+
+    fun reloadDevices() {
         viewModelScope.launch { bonded.value = deviceSource.bondedDevices() }
     }
 

@@ -1,6 +1,24 @@
 package com.bresler.parkingbro.ui.settings
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -53,6 +71,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Green, titleContentColor = AppWhite),
                 windowInsets = WindowInsets(0, 0, 0, 0),
             )
+            LazyColumn(Modifier.fillMaxSize()) {
+                item {
             Row(
                 Modifier.fillMaxWidth().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -68,6 +88,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                     colors = SwitchDefaults.colors(checkedTrackColor = Green),
                 )
             }
+                    PermissionRows(onBluetoothGranted = viewModel::reloadDevices)
             Text(
                 "Select your car's Bluetooth device(s)",
                 color = AppWhite, fontSize = 14.sp, letterSpacing = 0.sp,
@@ -80,7 +101,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                     modifier = Modifier.padding(16.dp),
                 )
             }
-            LazyColumn(Modifier.fillMaxWidth()) {
+                }
                 items(state.devices, key = { it.address }) { d ->
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
@@ -101,5 +122,77 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 }
             }
         }
+    }
+}
+
+private fun Context.granted(p: String) =
+    ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
+
+@Composable
+private fun StatusRow(label: String, ok: Boolean, action: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label + if (ok) ": OK" else ": needed",
+            color = if (ok) Green else AppWhite, fontSize = 14.sp, letterSpacing = 0.sp,
+            modifier = Modifier.weight(1f),
+        )
+        if (!ok) TextButton(onClick = onClick) { Text(action, color = Green, letterSpacing = 0.sp) }
+    }
+}
+
+@Composable
+private fun PermissionRows(onBluetoothGranted: () -> Unit) {
+    val ctx = LocalContext.current
+    var tick by remember { mutableIntStateOf(0) } // bump to recompose status after any grant/return from settings
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { tick++; onBluetoothGranted() }
+    val refresh = { tick++ }
+    val btLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        refresh(); if (it) onBluetoothGranted()
+    }
+    val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { refresh() }
+    val locLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { refresh() }
+    val bgLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { refresh() }
+    @Suppress("UNUSED_EXPRESSION") tick
+
+    Column {
+        if (Build.VERSION.SDK_INT >= 31) {
+            StatusRow("Bluetooth", ctx.granted(Manifest.permission.BLUETOOTH_CONNECT), "Allow") {
+                btLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+        }
+        if (Build.VERSION.SDK_INT >= 33) {
+            StatusRow("Notifications", ctx.granted(Manifest.permission.POST_NOTIFICATIONS), "Allow") {
+                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        val fine = ctx.granted(Manifest.permission.ACCESS_FINE_LOCATION)
+        StatusRow("Location", fine, "Allow") { locLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
+        if (fine && Build.VERSION.SDK_INT >= 29) {
+            // API 30+: system routes the user to Settings; choose "Allow all the time".
+            StatusRow("Location all the time", ctx.granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION), "Allow all the time") {
+                bgLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
+        }
+        val ignoring = ctx.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(ctx.packageName)
+        StatusRow("Battery unrestricted", ignoring, "Allow") {
+            runCatching {
+                ctx.startActivity(
+                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx.packageName)),
+                )
+            }
+        }
+        StatusRow("Auto-launch (OxygenOS)", false, "Open app settings") {
+            // Best effort: no OEM-private intents.
+            runCatching {
+                ctx.startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + ctx.packageName)),
+                )
+            }
+        }
+        Text(
+            "Enable \"Auto-launch\" / \"Allow background activity\" for this app.",
+            color = AppWhite, fontSize = 12.sp, letterSpacing = 0.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
     }
 }
