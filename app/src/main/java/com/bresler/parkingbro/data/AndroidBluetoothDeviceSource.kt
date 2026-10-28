@@ -9,6 +9,7 @@ import com.bresler.parkingbro.domain.BluetoothDeviceSource
 import com.bresler.parkingbro.domain.BtDevice
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -41,23 +42,38 @@ class AndroidBluetoothDeviceSource @Inject constructor(
 
     private suspend fun connectedVia(adapter: BluetoothAdapter, profile: Int): List<String> {
         val result = CompletableDeferred<BluetoothProfile>()
+        val lock = Any()
+        var proxy: BluetoothProfile? = null
+        var abandoned = false
         val listener = object : BluetoothProfile.ServiceListener {
-            override fun onServiceConnected(p: Int, proxy: BluetoothProfile) {
-                result.complete(proxy)
+            override fun onServiceConnected(p: Int, connectedProxy: BluetoothProfile) {
+                synchronized(lock) {
+                    if (abandoned) {
+                        // Connected after we gave up (timeout/cancel): release the binding.
+                        runCatching { adapter.closeProfileProxy(profile, connectedProxy) }
+                    } else {
+                        proxy = connectedProxy
+                        result.complete(connectedProxy)
+                    }
+                }
             }
 
             override fun onServiceDisconnected(p: Int) = Unit
         }
         return try {
             if (!adapter.getProfileProxy(context, listener, profile)) return emptyList()
-            val proxy = withTimeoutOrNull(PROXY_TIMEOUT_MS) { result.await() } ?: return emptyList()
-            try {
-                proxy.connectedDevices.map { it.address }
-            } finally {
-                adapter.closeProfileProxy(profile, proxy)
-            }
-        } catch (_: SecurityException) {
+            val connected = withTimeoutOrNull(PROXY_TIMEOUT_MS) { result.await() }
+                ?: return emptyList()
+            connected.connectedDevices.map { it.address }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
             emptyList()
+        } finally {
+            synchronized(lock) {
+                abandoned = true
+                proxy?.let { runCatching { adapter.closeProfileProxy(profile, it) } }
+            }
         }
     }
 
