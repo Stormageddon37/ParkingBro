@@ -31,6 +31,7 @@ private class FakeController : AutoSaveController {
     val calls = mutableListOf<String>()
     override fun start() { calls += "start" }
     override fun stop() { calls += "stop" }
+    override fun reArm() { calls += "reArm" }
 }
 
 private class FakeDevices(val list: List<BtDevice>) : BluetoothDeviceSource {

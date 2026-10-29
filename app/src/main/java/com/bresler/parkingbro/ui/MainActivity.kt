@@ -10,11 +10,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.lifecycleScope
+import com.bresler.parkingbro.domain.AutoSaveController
+import com.bresler.parkingbro.domain.AutoSaveSettings
 import com.bresler.parkingbro.ui.fullscreen.FullScreenImageScreen
 import com.bresler.parkingbro.ui.main.MainScreen
 import com.bresler.parkingbro.ui.settings.SettingsScreen
 import com.bresler.parkingbro.ui.theme.ParkingTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 private const val ROUTE_MAIN = "main"
 private const val ROUTE_SETTINGS = "settings"
@@ -23,9 +29,17 @@ private const val ROUTE_FULLSCREEN = "fullscreen/{$ARG_IMAGE_URI}"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var autoSaveSettings: AutoSaveSettings
+    @Inject lateinit var autoSaveController: AutoSaveController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // Opening the app re-arms the service from the foreground so it regains location
+        // access that Android denies a service started from the background (e.g. at boot).
+        lifecycleScope.launch {
+            if (autoSaveSettings.enabled.first()) autoSaveController.reArm()
+        }
         setContent {
             ParkingTheme {
                 val navController = rememberNavController()

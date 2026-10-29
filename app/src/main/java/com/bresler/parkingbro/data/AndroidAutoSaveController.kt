@@ -11,4 +11,8 @@ class AndroidAutoSaveController @Inject constructor(
 ) : AutoSaveController {
     override fun start() = AutoSaveService.start(context)
     override fun stop() = AutoSaveService.stop(context)
+    override fun reArm() {
+        AutoSaveService.stop(context)
+        AutoSaveService.start(context)
+    }
 }
