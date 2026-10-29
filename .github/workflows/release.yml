@@ -24,10 +24,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # sdkmanager ships on the GitHub-hosted runner; install the exact SDK this build needs.
-      - name: Install Android SDK packages
-        run: yes | sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
-
       - name: Decode keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
