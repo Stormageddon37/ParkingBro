@@ -7,6 +7,7 @@ import com.bresler.parkingbro.domain.Clock
 import com.bresler.parkingbro.domain.ImageStore
 import com.bresler.parkingbro.domain.LocationProvider
 import com.bresler.parkingbro.domain.ParkingStorage
+import com.bresler.parkingbro.domain.formatParkingTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -17,9 +18,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -84,7 +82,7 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun performSave(flush: Boolean) {
-        val fix = location.lastKnownLocation()
+        val fix = location.currentLocation()
         if (fix == null) {
             _events.send(UiEvent.ShowToast(ToastType.ERROR, "Could not get location"))
         } else {
@@ -95,7 +93,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun formatTimestamp(): String =
-        SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss", Locale.getDefault()).format(Date(clock.now()))
+        formatParkingTimestamp(clock.now())
 
     // --- Navigate ---
 

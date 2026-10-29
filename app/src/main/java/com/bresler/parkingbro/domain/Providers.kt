@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 interface LocationProvider {
     /** Best last-known location, or null if unavailable or location permission is missing. */
     fun lastKnownLocation(): LatLng?
+
+    /** A fresh fix if one arrives in time, else the last-known location, else null. */
+    suspend fun currentLocation(): LatLng?
 }
 
 /**

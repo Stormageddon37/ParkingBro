@@ -34,7 +34,10 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -76,6 +79,7 @@ private const val MAPS_SEARCH = "https://www.google.com/maps/search/?api=1&query
 @Composable
 fun MainScreen(
     onOpenImage: (Uri) -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -141,6 +145,11 @@ fun MainScreen(
             )
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name), color = AppWhite, letterSpacing = 0.sp) },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, "Settings", tint = AppWhite)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Green,
                     titleContentColor = AppWhite,

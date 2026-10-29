@@ -46,6 +46,7 @@ private class FakeStorage : ParkingStorage {
 
 private class FakeLocation(var value: LatLng?) : LocationProvider {
     override fun lastKnownLocation(): LatLng? = value
+    override suspend fun currentLocation(): LatLng? = value
 }
 
 private class FakeImageStore(private val uri: Uri) : ImageStore {

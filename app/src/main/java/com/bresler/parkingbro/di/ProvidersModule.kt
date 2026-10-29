@@ -1,9 +1,14 @@
 package com.bresler.parkingbro.di
 
+import com.bresler.parkingbro.data.AndroidAutoSaveController
+import com.bresler.parkingbro.data.AndroidBluetoothDeviceSource
 import com.bresler.parkingbro.data.AndroidLocationProvider
 import com.bresler.parkingbro.data.DataStoreParkingStorage
 import com.bresler.parkingbro.data.MediaStoreImageStore
 import com.bresler.parkingbro.data.SystemClock
+import com.bresler.parkingbro.domain.AutoSaveController
+import com.bresler.parkingbro.domain.AutoSaveSettings
+import com.bresler.parkingbro.domain.BluetoothDeviceSource
 import com.bresler.parkingbro.domain.Clock
 import com.bresler.parkingbro.domain.ImageStore
 import com.bresler.parkingbro.domain.LocationProvider
@@ -27,8 +32,18 @@ abstract class ProvidersModule {
     abstract fun bindParkingStorage(impl: DataStoreParkingStorage): ParkingStorage
 
     @Binds
+    @Singleton
+    abstract fun bindAutoSaveSettings(impl: DataStoreParkingStorage): AutoSaveSettings
+
+    @Binds
     abstract fun bindImageStore(impl: MediaStoreImageStore): ImageStore
 
     @Binds
+    abstract fun bindBluetoothDeviceSource(impl: AndroidBluetoothDeviceSource): BluetoothDeviceSource
+
+    @Binds
     abstract fun bindClock(impl: SystemClock): Clock
+
+    @Binds
+    abstract fun bindAutoSaveController(impl: AndroidAutoSaveController): AutoSaveController
 }
